@@ -27,6 +27,10 @@ public class SkillCapsuleEntity {
     private String difficulty;
     private String proficiencyLevel;
     private int moodleCourseId;
+
+    @OneToMany(mappedBy = "capsule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssessmentEntity> assessments = new ArrayList<>();
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
