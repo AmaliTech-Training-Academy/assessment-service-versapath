@@ -27,7 +27,6 @@ public class SkillCapsuleEntity {
     private String difficulty;
     private String proficiencyLevel;
     private int moodleCourseId;
-    private int estimatedHours;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
