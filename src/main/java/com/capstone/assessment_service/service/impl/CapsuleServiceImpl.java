@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,17 +22,34 @@ public class CapsuleServiceImpl implements CapsuleService {
 
     @Override
     public void create(SkillCapsuleEvent capsuleEvent) {
-        if(findByName(capsuleEvent.getName()).isPresent()){
+        if(findByName(capsuleEvent.getName()).isPresent() || findById(capsuleEvent.getId()).isPresent()){
             throw new CapsuleExistsException(
-                    String.format("A Skill Capsule with the name '%s' already exist",
+                    String.format("A skill capsule with the name '%s' already exist",
                             capsuleEvent.getName()));
         }
-        //TODO: insert capsule into DB
+
+        SkillCapsuleEntity capsule = SkillCapsuleEntity.builder()
+                .id(capsuleEvent.getId())
+                .name(capsuleEvent.getName())
+                .description(capsuleEvent.getDescription())
+                .proficiencyLevel(capsuleEvent.getProficiencyLevel())
+                .difficulty(capsuleEvent.getDifficulty())
+                .moodleCourseId(capsuleEvent.getMoodleCourseId())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        capsuleRepository.save(capsule);
+
+        logger.info("Capsule inserted successfully!");
 
     }
 
     @Override
     public Optional<SkillCapsuleEntity> findByName(String name) {
         return this.capsuleRepository.findByName(name);
+    }
+
+    public Optional<SkillCapsuleEntity> findById(UUID capsuleId){
+        return capsuleRepository.findById(capsuleId);
     }
 }
