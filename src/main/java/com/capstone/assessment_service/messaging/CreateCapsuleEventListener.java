@@ -14,7 +14,7 @@ public class CreateCapsuleEventListener {
     private static final Logger logger = LoggerFactory.getLogger(CreateCapsuleEventListener.class);
     private final CapsuleService capsuleService;
 
-    @KafkaListener(topics = "${CAPSULE_CREATE_TOPIC}")
+    @KafkaListener(topics = "${CAPSULE_UPDATE_TOPIC}")
     public void createCapsuleEvent(SkillCapsuleEvent event) {
         logger.info("Start creating capsule event {}", event);
 
