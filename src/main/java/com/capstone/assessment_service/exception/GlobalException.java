@@ -213,4 +213,17 @@ public class GlobalException {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(AssessmentExistsException.class)
+    public ResponseEntity<ClientResponseFormatDto> handleAssessmentExists
+            (AssessmentExistsException exception) {
+
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(false)
+                .message(exception.getMessage())
+                .errors(null)
+                .data(null)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
 }

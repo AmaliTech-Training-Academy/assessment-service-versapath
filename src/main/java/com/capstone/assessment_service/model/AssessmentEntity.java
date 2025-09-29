@@ -20,7 +20,7 @@ public class AssessmentEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "assessment_name", nullable = false)
+    @Column(name = "assessment_name", nullable = false, unique = true)
     private String assessmentName;
 
     @Column(name = "assessment_type")
