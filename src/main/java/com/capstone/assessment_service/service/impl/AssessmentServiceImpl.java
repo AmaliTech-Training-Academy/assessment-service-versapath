@@ -2,7 +2,7 @@ package com.capstone.assessment_service.service.impl;
 
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
-import com.capstone.assessment_service.exception.CapsuleExistsException;
+import com.capstone.assessment_service.exception.AssessmentExistsException;
 import com.capstone.assessment_service.exception.CapsuleNotFoundException;
 import com.capstone.assessment_service.mapper.AssessmentMapper;
 import com.capstone.assessment_service.messaging.CreateAssessmentOnMoodleProducerEvent;
@@ -16,6 +16,7 @@ import org.common.event.AssessmentEvent;
 import org.common.event.AssessmentUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,11 +33,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
     @Override
     public AssessmentResponseDto create(AssessmentRequestDto dto) {
-        if(findByName(dto.getAssessmentName()).isPresent()){
-            throw new CapsuleExistsException(
-                    String.format("An assessment with the name '%s' already exist",
-                            dto.getAssessmentName()));
-        }
+
         SkillCapsuleEntity capsule = capsuleService.findById(dto.getSkillCapsuleId())
                 .orElseThrow( () -> new CapsuleNotFoundException("A skill capsule provided doesn't exist")
                 );
@@ -45,12 +42,21 @@ public class AssessmentServiceImpl implements AssessmentService {
         assessment.setCreatedAt(LocalDateTime.now());
         assessment.setUpdatedAt(LocalDateTime.now());
 
-        AssessmentEntity savedAssessment = assessmentRepository.save(assessment);
-        logger.info("Assessment inserted successfully");
+        try {
 
-        sendCommandToCreateAssessmentOnMoodle(savedAssessment);
+            AssessmentEntity savedAssessment = assessmentRepository.save(assessment);
+            logger.info("Assessment inserted successfully");
 
-        return assessmentMapper.toResponseDto(savedAssessment);
+            sendCommandToCreateAssessmentOnMoodle(savedAssessment);
+
+            return assessmentMapper.toResponseDto(savedAssessment);
+
+        } catch (DataIntegrityViolationException e) {
+
+            throw new AssessmentExistsException(
+                    String.format("An assessment with the name '%s' already exists", dto.getAssessmentName()));
+        }
+
     }
 
     @Override
