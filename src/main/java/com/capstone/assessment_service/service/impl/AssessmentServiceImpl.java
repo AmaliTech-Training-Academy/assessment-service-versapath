@@ -13,6 +13,7 @@ import com.capstone.assessment_service.service.AssessmentService;
 import com.capstone.assessment_service.service.CapsuleService;
 import lombok.RequiredArgsConstructor;
 import org.common.event.AssessmentEvent;
+import org.common.event.AssessmentUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,19 @@ public class AssessmentServiceImpl implements AssessmentService {
     @Override
     public Optional<AssessmentEntity> findByName(String name) {
         return assessmentRepository.findByAssessmentName(name);
+    }
+
+    @Override
+    public void updateAssessmentWithMoodleData(AssessmentUpdateEvent assessmentUpdateEvent) {
+        AssessmentEntity assessment = assessmentRepository.findByAssessmentName(assessmentUpdateEvent.getAssessmentName())
+                .orElseThrow( () -> new CapsuleNotFoundException("An assessment provided doesn't exist")
+                );
+        assessment.setMoodleCourseModuleId(assessmentUpdateEvent.getMoodleCourseModuleId());
+        assessment.setMoodleQuizId(assessmentUpdateEvent.getQuizId());
+
+        assessmentRepository.save(assessment);
+
+        logger.info("Assessment updated successfully {}", assessment.getAssessmentName());
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
