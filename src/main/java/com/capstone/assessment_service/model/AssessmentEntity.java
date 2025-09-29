@@ -41,6 +41,9 @@ public class AssessmentEntity {
     @Column(name = "moodle_quiz_id")
     private int moodleQuizId;
 
+    @Column(name = "moodle_course_module_id")
+    private int moodleCourseModuleId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "skill_capsule_id", nullable = false)
     private SkillCapsuleEntity capsule;

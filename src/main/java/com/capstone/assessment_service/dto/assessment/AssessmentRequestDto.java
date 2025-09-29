@@ -19,16 +19,16 @@ public class AssessmentRequestDto {
 
     private String assessmentType;
 
-    @Min(value = 1, message = "Max attempts Must be at least 1 hour")
-    @Max(value = 1000, message = "Max attempts Must not exceed 1000 hours")
+    @Min(value = 1, message = "Max attempts Must be at least 1")
+    @Max(value = 1000, message = "Max attempts Must not exceed 1000")
     private int maxAttempts;
 
-    @Min(value = 1, message = "Time limit Must be at least 1 hour")
-    @Max(value = 1000, message = "Time limit Must not exceed 1000 hours")
+    @Min(value = 1, message = "Time limit Must be at least 1")
+    @Max(value = 1000, message = "Time limit Must not exceed 1000")
     private int timeLimitMinutes;
 
-    @Min(value = 1, message = "Passing Score Must be at least 1 hour")
-    @Max(value = 1000, message = "Passing Score Must not exceed 1000 hours")
+    @Min(value = 1, message = "Passing Score Must be at least 1")
+    @Max(value = 1000, message = "Passing Score Must not exceed 1000")
     private int passingScore;
 
     private String instructions;
