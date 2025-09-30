@@ -8,10 +8,10 @@ WORKDIR /application
 COPY target/*-SNAPSHOT.jar app.jar
 
 # create a non-root user (Alpine / musl)
-RUN addgroup -S  && adduser -S -G  
+RUN addgroup -S lmsservice && adduser -S -G lmsservice lmsservice
 
 # Switch to non-root user
-USER 
+USER lmsservice
 
 # Expose the port that the application will run on
 EXPOSE 8120
