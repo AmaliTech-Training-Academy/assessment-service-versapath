@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.common.event.SkillCapsuleEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,11 +23,6 @@ public class CapsuleServiceImpl implements CapsuleService {
 
     @Override
     public void create(SkillCapsuleEvent capsuleEvent) {
-        if(findByName(capsuleEvent.getName()).isPresent() || findById(capsuleEvent.getId()).isPresent()){
-            throw new CapsuleExistsException(
-                    String.format("A skill capsule with the name '%s' already exist",
-                            capsuleEvent.getName()));
-        }
 
         SkillCapsuleEntity capsule = SkillCapsuleEntity.builder()
                 .id(capsuleEvent.getId())
@@ -38,9 +34,16 @@ public class CapsuleServiceImpl implements CapsuleService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        capsuleRepository.save(capsule);
 
-        logger.info("Capsule inserted successfully!");
+        try{
+            capsuleRepository.save(capsule);
+
+            logger.info("Capsule inserted successfully!");
+        }catch (DataIntegrityViolationException e){
+            throw new CapsuleExistsException(
+                    String.format("A skill capsule with the name '%s' already exist",
+                            capsuleEvent.getName()));
+        }
 
     }
 
