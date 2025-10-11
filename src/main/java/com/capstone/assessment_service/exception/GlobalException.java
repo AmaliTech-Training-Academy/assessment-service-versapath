@@ -226,4 +226,30 @@ public class GlobalException {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(UserExistsException.class)
+    public ResponseEntity<ClientResponseFormatDto> handleUserExists
+            (UserExistsException exception) {
+
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(false)
+                .message(exception.getMessage())
+                .errors(null)
+                .data(null)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ClientResponseFormatDto> handleUserNotfound
+            (UserNotFoundException exception) {
+
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(false)
+                .message(exception.getMessage())
+                .errors(null)
+                .data(null)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
 }
