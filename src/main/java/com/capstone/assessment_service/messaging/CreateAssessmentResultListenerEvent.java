@@ -18,5 +18,6 @@ public class CreateAssessmentResultListenerEvent {
     public void handleMoodleUserCreation(AssessmentResultEvent event) {
         logger.info("Start inserting assessment result to the database: {}", event);
 
+        assessmentService.createAssessmentResult(event); // insert assessment result into DB
     }
 }
