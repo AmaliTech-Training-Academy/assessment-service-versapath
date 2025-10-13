@@ -16,7 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,6 +67,19 @@ public class AssessmentController {
         ClientResponseFormatDto response = ClientResponseFormatDto.builder()
                 .success(true)
                 .message("Filter assessments")
+                .errors(null)
+                .data(assessments)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/{capsuleId}/capsule")
+    @Operation(summary = "Retrieve assessments by capsule", description = "This end point allows the fetching of all assessments by capsule")
+    public ResponseEntity<ClientResponseFormatDto> fetchAssessmentsByCapsule(@PathVariable UUID capsuleId) {
+        List<AssessmentResponseDto> assessments = this.assessmentService.findByCapsuleId(capsuleId);
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(true)
+                .message("Fetch all assessments by capsule")
                 .errors(null)
                 .data(assessments)
                 .build();

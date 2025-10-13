@@ -18,5 +18,5 @@ public class AssessmentResponseDto {
     private int maxAttempts;
     private int timeLimitMinutes;
     private int passingScore;
-
+    private int moodleQuizId;
 }

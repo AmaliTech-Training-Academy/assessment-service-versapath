@@ -25,7 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -128,6 +130,12 @@ public class AssessmentServiceImpl implements AssessmentService {
                         .hasPrevious(assessments.hasPrevious())
                         .build())
                 .build();
+    }
+
+    @Override
+    public List<AssessmentResponseDto> findByCapsuleId(UUID capsuleId) {
+        List<AssessmentEntity> assessmentList = assessmentRepository.findByCapsuleId(capsuleId);
+        return assessmentList.stream().map(assessmentMapper::toResponseDto).toList();
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
