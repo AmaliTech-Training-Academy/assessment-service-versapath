@@ -13,6 +13,8 @@ public class AssessmentResponseDto {
     private String assessmentName;
     private String assessmentType;
     private String capsuleName;
+    private String description;
+    private String status;
     private int maxAttempts;
     private int timeLimitMinutes;
     private int passingScore;

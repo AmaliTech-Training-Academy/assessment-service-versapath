@@ -20,7 +20,7 @@ public class AssessmentRequestDto {
     private String assessmentType;
 
     @Min(value = 1, message = "Max attempts Must be at least 1")
-    @Max(value = 1000, message = "Max attempts Must not exceed 1000")
+    @Max(value = 100, message = "Max attempts Must not exceed 1000")
     private int maxAttempts;
 
     @Min(value = 1, message = "Time limit Must be at least 1")
@@ -28,9 +28,11 @@ public class AssessmentRequestDto {
     private int timeLimitMinutes;
 
     @Min(value = 1, message = "Passing Score Must be at least 1")
-    @Max(value = 1000, message = "Passing Score Must not exceed 1000")
+    @Max(value = 100, message = "Passing Score Must not exceed 1000")
     private int passingScore;
 
     private String instructions;
+    private String status;
+    private String description;
     private UUID skillCapsuleId;
 }
