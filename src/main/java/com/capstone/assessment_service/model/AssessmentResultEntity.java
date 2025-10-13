@@ -34,7 +34,7 @@ public class AssessmentResultEntity {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
-    private boolean score;
+    private double score;
 
     @Column(name = "attempt_number")
     private int attemptNumber;

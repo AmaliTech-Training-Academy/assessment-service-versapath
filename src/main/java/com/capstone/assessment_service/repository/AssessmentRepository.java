@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface AssessmentRepository extends JpaRepository<AssessmentEntity, UUID> {
     Optional<AssessmentEntity> findByAssessmentName(String name);
+    Optional<AssessmentEntity> findByMoodleQuizId(int moodleQuizId);
 }
