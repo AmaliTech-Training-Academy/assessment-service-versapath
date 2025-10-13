@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -85,6 +86,36 @@ public class AssessmentServiceImpl implements AssessmentService {
     public CustomPageResponse<AssessmentResponseDto> findAll(Pageable pageable) {
         Page<AssessmentEntity> assessmentList = assessmentRepository.findAll(pageable);
         Page<AssessmentResponseDto> assessments = assessmentList.map(assessmentMapper::toResponseDto);
+
+        logger.info("Assessment fetched successfully");
+
+        return CustomPageResponse.<AssessmentResponseDto>builder()
+                .items(assessments.getContent())
+                .pagination(PaginationData.builder()
+                        .page(assessments.getNumber())
+                        .size(assessments.getSize())
+                        .totalElements(assessments.getTotalElements())
+                        .totalPages(assessments.getTotalPages())
+                        .hasNext(assessments.hasNext())
+                        .hasPrevious(assessments.hasPrevious())
+                        .build())
+                .build();
+    }
+
+    @Override
+    public CustomPageResponse<AssessmentResponseDto> filter(String name, Pageable pageable) {
+
+        Page<AssessmentEntity> assessmentList= null;
+        // if assessment name isn't provided fetch 20 first items
+        if(name == null || name.trim().isEmpty()){
+            assessmentList = this.assessmentRepository.findAll(PageRequest.of(0, 20));
+        }else{
+            assessmentList = this.assessmentRepository.findByAssessmentNameContainingIgnoreCase(name, pageable);
+        }
+
+        Page<AssessmentResponseDto> assessments = assessmentList.map(assessmentMapper::toResponseDto);
+
+        logger.info("Assessment filtered successfully");
 
         return CustomPageResponse.<AssessmentResponseDto>builder()
                 .items(assessments.getContent())

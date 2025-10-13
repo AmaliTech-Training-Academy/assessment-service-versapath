@@ -14,4 +14,5 @@ public interface AssessmentService {
     Optional<AssessmentEntity> findByName(String name);
     void updateAssessmentWithMoodleData(AssessmentUpdateEvent assessmentUpdateEvent);
     CustomPageResponse<AssessmentResponseDto> findAll(Pageable pageable);
+    CustomPageResponse<AssessmentResponseDto> filter(String name, Pageable pageable);
 }
