@@ -1,5 +1,7 @@
 package com.capstone.assessment_service.service.impl;
 
+import com.capstone.assessment_service.dto.CustomPageResponse;
+import com.capstone.assessment_service.dto.PaginationData;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
 import com.capstone.assessment_service.exception.AssessmentExistsException;
@@ -17,6 +19,8 @@ import org.common.event.AssessmentUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -75,6 +79,24 @@ public class AssessmentServiceImpl implements AssessmentService {
         assessmentRepository.save(assessment);
 
         logger.info("Assessment updated successfully {}", assessment.getAssessmentName());
+    }
+
+    @Override
+    public CustomPageResponse<AssessmentResponseDto> findAll(Pageable pageable) {
+        Page<AssessmentEntity> assessmentList = assessmentRepository.findAll(pageable);
+        Page<AssessmentResponseDto> assessments = assessmentList.map(assessmentMapper::toResponseDto);
+
+        return CustomPageResponse.<AssessmentResponseDto>builder()
+                .items(assessments.getContent())
+                .pagination(PaginationData.builder()
+                        .page(assessments.getNumber())
+                        .size(assessments.getSize())
+                        .totalElements(assessments.getTotalElements())
+                        .totalPages(assessments.getTotalPages())
+                        .hasNext(assessments.hasNext())
+                        .hasPrevious(assessments.hasPrevious())
+                        .build())
+                .build();
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
