@@ -85,4 +85,17 @@ public class AssessmentController {
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @DeleteMapping("/{assessmentId}")
+    @Operation(summary = "Delete assessment", description = "This end point allows the deletion of assessment by id")
+    public ResponseEntity<ClientResponseFormatDto> deleteAssessment(@PathVariable UUID assessmentId) {
+        this.assessmentService.deleteById(assessmentId);
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(true)
+                .message("Successfully deleted assessment")
+                .errors(null)
+                .data(null)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

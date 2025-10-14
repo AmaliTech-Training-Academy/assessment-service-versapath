@@ -175,6 +175,17 @@ public class AssessmentServiceImpl implements AssessmentService {
         logger.info("Assessment result inserted successfully");
     }
 
+    @Override
+    public void deleteById(UUID id) {
+        if(assessmentRepository.findById(id).isEmpty()){
+            throw new AssessmentExistsException("Assessment provided doesn't exist");
+        }
+
+        assessmentRepository.deleteById(id);
+
+        logger.info("Assessment deleted successfully");
+    }
+
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
         AssessmentEvent assessmentEvent = AssessmentEvent.builder()
                 .assessmentName(savedAssessment.getAssessmentName())

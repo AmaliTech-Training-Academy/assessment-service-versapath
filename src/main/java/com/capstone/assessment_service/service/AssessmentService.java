@@ -20,4 +20,5 @@ public interface AssessmentService {
     CustomPageResponse<AssessmentResponseDto> filter(String name, Pageable pageable);
     List<AssessmentResponseDto> findByCapsuleId(UUID capsuleId);
     void createAssessmentResult(AssessmentResultEvent event);
+    void deleteById(UUID id);
 }
