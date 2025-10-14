@@ -23,4 +23,5 @@ public interface AssessmentRepository extends JpaRepository<AssessmentEntity, UU
     WHERE a.capsule.id = :capsuleId
     """)
     List<AssessmentEntity> findByCapsuleId(@Param("capsuleId") UUID capsuleId);
+    Optional<AssessmentEntity> findByMoodleQuizId(int moodleQuizId);
 }

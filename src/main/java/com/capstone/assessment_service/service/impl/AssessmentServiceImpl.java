@@ -6,15 +6,22 @@ import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
 import com.capstone.assessment_service.exception.AssessmentExistsException;
 import com.capstone.assessment_service.exception.CapsuleNotFoundException;
+import com.capstone.assessment_service.exception.UserNotFoundException;
 import com.capstone.assessment_service.mapper.AssessmentMapper;
 import com.capstone.assessment_service.messaging.CreateAssessmentOnMoodleProducerEvent;
+import com.capstone.assessment_service.messaging.PopulateAssessmentEvents;
 import com.capstone.assessment_service.model.AssessmentEntity;
+import com.capstone.assessment_service.model.AssessmentResultEntity;
 import com.capstone.assessment_service.model.SkillCapsuleEntity;
+import com.capstone.assessment_service.model.UserSnapshot;
 import com.capstone.assessment_service.repository.AssessmentRepository;
+import com.capstone.assessment_service.repository.AssessmentResultRepository;
+import com.capstone.assessment_service.repository.UserSnapshotRepository;
 import com.capstone.assessment_service.service.AssessmentService;
 import com.capstone.assessment_service.service.CapsuleService;
 import lombok.RequiredArgsConstructor;
 import org.common.event.AssessmentEvent;
+import org.common.event.AssessmentResultEvent;
 import org.common.event.AssessmentUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +44,9 @@ public class AssessmentServiceImpl implements AssessmentService {
     private final CapsuleService capsuleService;
     private final AssessmentMapper assessmentMapper;
     private final CreateAssessmentOnMoodleProducerEvent createAssessmentOnMoodleProducerEvent;
+    private final AssessmentResultRepository assessmentResultRepository;
+    private final UserSnapshotRepository userSnapshotRepository;
+    private final PopulateAssessmentEvents populateAssessmentEvents;
 
     @Override
     public AssessmentResponseDto create(AssessmentRequestDto dto) {
@@ -138,6 +148,33 @@ public class AssessmentServiceImpl implements AssessmentService {
         return assessmentList.stream().map(assessmentMapper::toResponseDto).toList();
     }
 
+    public void createAssessmentResult(AssessmentResultEvent event) {
+        AssessmentEntity assessment = assessmentRepository.findByMoodleQuizId(event.getMoodleQuizId())
+                .orElseThrow( () -> new AssessmentExistsException("Assessment provided doesn't exist")
+                );
+
+        UserSnapshot leaner = userSnapshotRepository.findById(event.getUserId())
+                .orElseThrow( () -> new UserNotFoundException("User provided doesn't exist")
+                );
+
+        AssessmentResultEntity assessmentResult = AssessmentResultEntity.builder()
+                .assessment(assessment)
+                .learner(leaner)
+                .attemptNumber(event.getAttemptNumber())
+                .score(event.getGrade())
+                .isPassed(event.getGrade() >= assessment.getPassingScore())
+                .startedAt(event.getTimeStart())
+                .submittedAt(event.getTimeFinish())
+                .build();
+
+
+        AssessmentResultEntity assessmentResultEntity = assessmentResultRepository.save(assessmentResult);
+
+        populateAssessmentResult(assessmentResultEntity);
+
+        logger.info("Assessment result inserted successfully");
+    }
+
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
         AssessmentEvent assessmentEvent = AssessmentEvent.builder()
                 .assessmentName(savedAssessment.getAssessmentName())
@@ -147,8 +184,28 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .timeLimitMinutes(savedAssessment.getTimeLimitMinutes())
                 .capsuleId(savedAssessment.getCapsule().getId())
                 .moodleCourseId(savedAssessment.getCapsule().getMoodleCourseId())
+                .capsuleId(savedAssessment.getCapsule().getId())
                 .build();
 
         createAssessmentOnMoodleProducerEvent.createAssessmentOnMoodle(assessmentEvent);
+    }
+
+    private void populateAssessmentResult(AssessmentResultEntity assessmentResult ){
+        AssessmentResultEvent assessmentResultEvent = AssessmentResultEvent.builder()
+                .userId(assessmentResult.getLearner().getId())
+                .assessmentName(assessmentResult.getAssessment().getAssessmentName())
+                .assessmentId(assessmentResult.getAssessment().getId())
+                .timeStart(assessmentResult.getStartedAt())
+                .timeFinish(assessmentResult.getSubmittedAt())
+                .moodleQuizId(assessmentResult.getAssessment().getMoodleQuizId())
+                .attemptNumber(assessmentResult.getAttemptNumber())
+                .grade(assessmentResult.getScore())
+                .capsuleId(assessmentResult.getAssessment().getCapsule().getId())
+                .build();
+
+        populateAssessmentEvents.populateCreateAssessmentResult(assessmentResultEvent);
+
+        logger.info("Assessment result populated successfully {}", assessmentResultEvent);
+
     }
 }
