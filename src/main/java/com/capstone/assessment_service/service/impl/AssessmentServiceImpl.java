@@ -1,5 +1,7 @@
 package com.capstone.assessment_service.service.impl;
 
+import com.capstone.assessment_service.dto.CustomPageResponse;
+import com.capstone.assessment_service.dto.PaginationData;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
 import com.capstone.assessment_service.exception.AssessmentExistsException;
@@ -24,10 +26,15 @@ import org.common.event.AssessmentUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +95,59 @@ public class AssessmentServiceImpl implements AssessmentService {
     }
 
     @Override
+    public CustomPageResponse<AssessmentResponseDto> findAll(Pageable pageable) {
+        Page<AssessmentEntity> assessmentList = assessmentRepository.findAll(pageable);
+        Page<AssessmentResponseDto> assessments = assessmentList.map(assessmentMapper::toResponseDto);
+
+        logger.info("Assessment fetched successfully");
+
+        return CustomPageResponse.<AssessmentResponseDto>builder()
+                .items(assessments.getContent())
+                .pagination(PaginationData.builder()
+                        .page(assessments.getNumber())
+                        .size(assessments.getSize())
+                        .totalElements(assessments.getTotalElements())
+                        .totalPages(assessments.getTotalPages())
+                        .hasNext(assessments.hasNext())
+                        .hasPrevious(assessments.hasPrevious())
+                        .build())
+                .build();
+    }
+
+    @Override
+    public CustomPageResponse<AssessmentResponseDto> filter(String name, Pageable pageable) {
+
+        Page<AssessmentEntity> assessmentList= null;
+        // if assessment name isn't provided fetch 20 first items
+        if(name == null || name.trim().isEmpty()){
+            assessmentList = this.assessmentRepository.findAll(PageRequest.of(0, 20));
+        }else{
+            assessmentList = this.assessmentRepository.findByAssessmentNameContainingIgnoreCase(name, pageable);
+        }
+
+        Page<AssessmentResponseDto> assessments = assessmentList.map(assessmentMapper::toResponseDto);
+
+        logger.info("Assessment filtered successfully");
+
+        return CustomPageResponse.<AssessmentResponseDto>builder()
+                .items(assessments.getContent())
+                .pagination(PaginationData.builder()
+                        .page(assessments.getNumber())
+                        .size(assessments.getSize())
+                        .totalElements(assessments.getTotalElements())
+                        .totalPages(assessments.getTotalPages())
+                        .hasNext(assessments.hasNext())
+                        .hasPrevious(assessments.hasPrevious())
+                        .build())
+                .build();
+    }
+
+    @Override
+    public List<AssessmentResponseDto> findByCapsuleId(UUID capsuleId) {
+        List<AssessmentEntity> assessmentList = assessmentRepository.findByCapsuleId(capsuleId);
+        return assessmentList.stream().map(assessmentMapper::toResponseDto).toList();
+    }
+
     public void createAssessmentResult(AssessmentResultEvent event) {
         AssessmentEntity assessment = assessmentRepository.findByMoodleQuizId(event.getMoodleQuizId())
                 .orElseThrow( () -> new AssessmentExistsException("Assessment provided doesn't exist")
@@ -124,6 +184,7 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .timeLimitMinutes(savedAssessment.getTimeLimitMinutes())
                 .capsuleId(savedAssessment.getCapsule().getId())
                 .moodleCourseId(savedAssessment.getCapsule().getMoodleCourseId())
+                .capsuleId(savedAssessment.getCapsule().getId())
                 .build();
 
         createAssessmentOnMoodleProducerEvent.createAssessmentOnMoodle(assessmentEvent);
@@ -139,6 +200,7 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .moodleQuizId(assessmentResult.getAssessment().getMoodleQuizId())
                 .attemptNumber(assessmentResult.getAttemptNumber())
                 .grade(assessmentResult.getScore())
+                .capsuleId(assessmentResult.getAssessment().getCapsule().getId())
                 .build();
 
         populateAssessmentEvents.populateCreateAssessmentResult(assessmentResultEvent);
