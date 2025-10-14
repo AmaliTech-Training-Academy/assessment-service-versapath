@@ -4,6 +4,7 @@ import com.capstone.assessment_service.dto.ClientResponseFormatDto;
 import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.service.AssessmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -95,6 +96,20 @@ public class AssessmentController {
                 .message("Successfully deleted assessment")
                 .errors(null)
                 .data(null)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PatchMapping("/{assessmentId}")
+    @Operation(summary = "Update assessment", description = "This end point allows the update of assessment by id")
+    public ResponseEntity<ClientResponseFormatDto> updateAssessment(@PathVariable UUID assessmentId,
+                                                                    @RequestBody AssessmentUpdateRequestDto dto) {
+        AssessmentResponseDto assessmentResponseDto = this.assessmentService.partialUpdate(dto, assessmentId);
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(true)
+                .message("Successfully updated assessment")
+                .errors(null)
+                .data(assessmentResponseDto)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
