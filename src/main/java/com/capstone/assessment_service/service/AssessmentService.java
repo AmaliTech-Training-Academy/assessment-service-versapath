@@ -3,6 +3,7 @@ package com.capstone.assessment_service.service;
 import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentResultResponseDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.model.AssessmentEntity;
 import org.common.event.AssessmentResultEvent;
@@ -23,4 +24,5 @@ public interface AssessmentService {
     void createAssessmentResult(AssessmentResultEvent event);
     void deleteById(UUID id);
     AssessmentResponseDto partialUpdate(AssessmentUpdateRequestDto dto, UUID id);
+    List<AssessmentResultResponseDto> findAssessmentWithLearnerResult(UUID capsuleId);
 }
