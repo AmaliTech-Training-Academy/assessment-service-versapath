@@ -4,6 +4,7 @@ import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.PaginationData;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.exception.AssessmentExistsException;
 import com.capstone.assessment_service.exception.CapsuleNotFoundException;
 import com.capstone.assessment_service.exception.UserNotFoundException;
@@ -16,6 +17,7 @@ import com.capstone.assessment_service.model.SkillCapsuleEntity;
 import com.capstone.assessment_service.model.UserSnapshot;
 import com.capstone.assessment_service.repository.AssessmentRepository;
 import com.capstone.assessment_service.repository.AssessmentResultRepository;
+import com.capstone.assessment_service.repository.CapsuleRepository;
 import com.capstone.assessment_service.repository.UserSnapshotRepository;
 import com.capstone.assessment_service.service.AssessmentService;
 import com.capstone.assessment_service.service.CapsuleService;
@@ -47,6 +49,7 @@ public class AssessmentServiceImpl implements AssessmentService {
     private final AssessmentResultRepository assessmentResultRepository;
     private final UserSnapshotRepository userSnapshotRepository;
     private final PopulateAssessmentEvents populateAssessmentEvents;
+    private final CapsuleRepository capsuleRepository;
 
     @Override
     public AssessmentResponseDto create(AssessmentRequestDto dto) {
@@ -173,6 +176,66 @@ public class AssessmentServiceImpl implements AssessmentService {
         populateAssessmentResult(assessmentResultEntity);
 
         logger.info("Assessment result inserted successfully");
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        if(assessmentRepository.findById(id).isEmpty()){
+            throw new AssessmentExistsException("Assessment provided doesn't exist");
+        }
+
+        assessmentRepository.deleteById(id);
+
+        logger.info("Assessment deleted successfully");
+    }
+
+    @Override
+    public AssessmentResponseDto partialUpdate(AssessmentUpdateRequestDto dto, UUID id) {
+        AssessmentEntity assessment = assessmentRepository.findById(id)
+                .orElseThrow(()-> new AssessmentExistsException("Assessment provided doesn't exist"));
+
+        if(dto.getAssessmentType() != null){
+            assessment.setAssessmentType(dto.getAssessmentType());
+        }
+
+        if(dto.getAssessmentName() != null){
+            assessment.setAssessmentName(dto.getAssessmentName());
+        }
+
+        if(dto.getDescription() != null){
+            assessment.setDescription(dto.getDescription());
+        }
+
+        if(dto.getPassingScore() != assessment.getPassingScore()){
+            assessment.setPassingScore(dto.getPassingScore());
+        }
+
+        if(dto.getMaxAttempts() != assessment.getMaxAttempts()){
+            assessment.setMaxAttempts(dto.getMaxAttempts());
+        }
+
+        if(dto.getInstructions() != null){
+            assessment.setDescription(dto.getDescription());
+        }
+
+        if(dto.getTimeLimitMinutes() != assessment.getTimeLimitMinutes()){
+            assessment.setTimeLimitMinutes(dto.getTimeLimitMinutes());
+        }
+
+        if(dto.getStatus() != null){
+            assessment.setStatus(dto.getStatus());
+        }
+
+        if(dto.getSkillCapsuleId() != null){
+            SkillCapsuleEntity capsule = capsuleRepository.findById(dto.getSkillCapsuleId())
+                    .orElseThrow(()-> new CapsuleNotFoundException("Capsule provided doesn't exist"));
+
+            assessment.setCapsule(capsule);
+        }
+
+        logger.info("Assessment updated successfully");
+
+        return assessmentMapper.toResponseDto(assessmentRepository.save(assessment));
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){

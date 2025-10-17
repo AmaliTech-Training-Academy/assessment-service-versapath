@@ -3,6 +3,7 @@ package com.capstone.assessment_service.service;
 import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.model.AssessmentEntity;
 import org.common.event.AssessmentResultEvent;
 import org.common.event.AssessmentUpdateEvent;
@@ -20,4 +21,6 @@ public interface AssessmentService {
     CustomPageResponse<AssessmentResponseDto> filter(String name, Pageable pageable);
     List<AssessmentResponseDto> findByCapsuleId(UUID capsuleId);
     void createAssessmentResult(AssessmentResultEvent event);
+    void deleteById(UUID id);
+    AssessmentResponseDto partialUpdate(AssessmentUpdateRequestDto dto, UUID id);
 }
