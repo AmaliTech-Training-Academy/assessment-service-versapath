@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -52,6 +54,9 @@ public class AssessmentEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "skill_capsule_id", nullable = false)
     private SkillCapsuleEntity capsule;
+
+    @OneToMany(mappedBy = "assessment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssessmentResultEntity> assessmentResults = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
