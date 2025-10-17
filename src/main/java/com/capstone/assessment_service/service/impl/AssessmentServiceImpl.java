@@ -248,11 +248,10 @@ public class AssessmentServiceImpl implements AssessmentService {
         // get the current authenticated user
         String stringUserId = SecurityContextHolder.getContext().getAuthentication().getName();
         UUID userId =  UUID.fromString(stringUserId);
-
         UserSnapshot learner = userSnapshotRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("The learner provided "));
+                .orElseThrow(() -> new UserNotFoundException("The learner provided doesn't exist"));
 
-        return null;
+        return assessmentResultRepository.findAssessmentWithLearnerResult(learner.getId(), capsule.getId());
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){

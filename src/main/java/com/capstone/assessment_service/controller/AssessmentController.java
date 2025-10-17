@@ -4,6 +4,7 @@ import com.capstone.assessment_service.dto.ClientResponseFormatDto;
 import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentResultResponseDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.service.AssessmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -110,6 +111,19 @@ public class AssessmentController {
                 .message("Successfully updated assessment")
                 .errors(null)
                 .data(assessmentResponseDto)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/learner/{capsuleId}/capsule")
+    @Operation(summary = "Retrieve assessments by capsule", description = "This end point allows a learner to view all the assessment by capsule")
+    public ResponseEntity<ClientResponseFormatDto> fetchAssessmentsWithLearnerResults(@PathVariable UUID capsuleId) {
+        List<AssessmentResultResponseDto> assessments = this.assessmentService.findAssessmentWithLearnerResult(capsuleId);
+        ClientResponseFormatDto response = ClientResponseFormatDto.builder()
+                .success(true)
+                .message("Fetch all assessments by capsule")
+                .errors(null)
+                .data(assessments)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
