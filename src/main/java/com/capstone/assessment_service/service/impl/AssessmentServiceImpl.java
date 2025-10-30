@@ -4,6 +4,7 @@ import com.capstone.assessment_service.dto.CustomPageResponse;
 import com.capstone.assessment_service.dto.PaginationData;
 import com.capstone.assessment_service.dto.assessment.AssessmentRequestDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentResponseDto;
+import com.capstone.assessment_service.dto.assessment.AssessmentResultResponseDto;
 import com.capstone.assessment_service.dto.assessment.AssessmentUpdateRequestDto;
 import com.capstone.assessment_service.exception.AssessmentExistsException;
 import com.capstone.assessment_service.exception.CapsuleNotFoundException;
@@ -31,6 +32,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -236,6 +238,20 @@ public class AssessmentServiceImpl implements AssessmentService {
         logger.info("Assessment updated successfully");
 
         return assessmentMapper.toResponseDto(assessmentRepository.save(assessment));
+    }
+
+    @Override
+    public List<AssessmentResultResponseDto> findAssessmentWithLearnerResult(UUID capsuleId) {
+        SkillCapsuleEntity capsule = capsuleRepository.findById(capsuleId)
+                .orElseThrow(()-> new CapsuleNotFoundException("The Capsule provided doesn't exist"));
+
+        // get the current authenticated user
+        String stringUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        UUID userId =  UUID.fromString(stringUserId);
+        UserSnapshot learner = userSnapshotRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("The learner provided doesn't exist"));
+
+        return assessmentResultRepository.findAssessmentWithLearnerResult(learner.getId(), capsule.getId());
     }
 
     void sendCommandToCreateAssessmentOnMoodle(AssessmentEntity savedAssessment){
